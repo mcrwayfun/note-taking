@@ -1,0 +1,6 @@
+# windows
+1. 如何生成一个项目结构树，比如现有项目spring-data-jpa-h2
+```
+tree spring-boot-jpa-h2 > list.txt
+```
+在list.txt中生成树形结构

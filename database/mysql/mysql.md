@@ -1,0 +1,2 @@
+# mysql
+1. centos 7下mysql服务重启失败：https://www.cnblogs.com/ivictor/p/5146247.html
