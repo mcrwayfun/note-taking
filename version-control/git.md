@@ -26,3 +26,19 @@ function lazygit() {
 git commit --amend
 ```
 此时会进入默认vim编辑器，修改注释完毕后保存就好了。
+
+## 修改commit信息
+1、 将当前分支无关的工作状态进行暂存
+```
+git stash
+```
+2、 将 HEAD 移动到需要修改的 commit 上
+```
+git rebase 9633cf0919^ --interactive
+```
+3、找到需要修改的 commit ,将首行的 pick 改成 edit
+4、开始着手解决你的 bug
+5、git add 将改动文件添加到暂存
+6、git commit –amend 追加改动到提交
+7、git rebase –continue 移动 HEAD 回最新的 commit
+8、恢复之前的工作状态，git stash pop
