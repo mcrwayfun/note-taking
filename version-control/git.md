@@ -42,3 +42,9 @@ git rebase 9633cf0919^ --interactive
 6、git commit –amend 追加改动到提交
 7、git rebase –continue 移动 HEAD 回最新的 commit
 8、恢复之前的工作状态，git stash pop
+
+## 强制更新本地文件
+```
+git fetch - -all 
+git reset - -hard origin/master 
+```
