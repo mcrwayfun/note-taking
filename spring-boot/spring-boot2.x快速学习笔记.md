@@ -76,15 +76,15 @@
 1. MultipartFile 对象的transferTo方法，用于文件保存（效率和操作比原先用FileOutStream方便和高效）
 2. 可以使用配置的方式或者@Bean的方式来添加上传文件的配置
 ```java
-			@Bean  
-		    public MultipartConfigElement multipartConfigElement() {  
-		        MultipartConfigFactory factory = new MultipartConfigFactory();  
-		        //单个文件最大  
-		        factory.setMaxFileSize("10240KB"); //KB,MB  
-		        /// 设置总上传数据总大小  
-		        factory.setMaxRequestSize("1024000KB");  
-		        return factory.createMultipartConfig();  
-		    }  
+@Bean  
+public MultipartConfigElement multipartConfigElement() {  
+	MultipartConfigFactory factory = new MultipartConfigFactory();  
+	//单个文件最大  
+	factory.setMaxFileSize("10240KB"); //KB,MB  
+	/// 设置总上传数据总大小  
+	factory.setMaxRequestSize("1024000KB");  
+	return factory.createMultipartConfig();  
+}
 ```
 3. 当访问盘符中的文件时，需要在**spring.resources.static-locations**后添加路径
 ```
@@ -102,7 +102,6 @@ private String filePath;
 ```java
 		<build>
 			<plugins>
-
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
@@ -132,6 +131,7 @@ private String filePath;
 ![](https://i.imgur.com/hk4jKeJ.png)
 
 然后 Shift+Ctrl+Alt+/，选择Registry
+
 ![](https://i.imgur.com/Zbcv1iL.png)
 
 进去之后，找到如下图所示的选项，打勾
@@ -217,23 +217,23 @@ public class SpringBootTests { }
 ## 9. 全局异常
 使用类注解`@ControllerAdvice`或者`@RestControllerAdvice`就可以捕获到未处理的异常。可以返回一个json串，由前端人员决定跳转到错误的界面。亦或者返回一个页面
 ```java
-	//捕获全局异常,处理所有不可知的异常
-	@ExceptionHandler(value=Exception.class)
-    Object handleException(Exception e,HttpServletRequest request){
-		LOG.error("url {}, msg {}",request.getRequestURL(), e.getMessage()); 
-		Map<String, Object> map = new HashMap<>();
-	        map.put("code", 100);
-	        map.put("msg", e.getMessage());
-	        map.put("url", request.getRequestURL());
-	        return map;
-    }
+//捕获全局异常,处理所有不可知的异常
+@ExceptionHandler(value=Exception.class)
+Object handleException(Exception e,HttpServletRequest request){
+	LOG.error("url {}, msg {}",request.getRequestURL(), e.getMessage()); 
+	Map<String, Object> map = new HashMap<>();
+		map.put("code", 100);
+		map.put("msg", e.getMessage());
+		map.put("url", request.getRequestURL());
+		return map;
+}
 
-	@ExceptionHandler(value=MyException.class)
-    Object handleMyException(MyException e,HttpServletRequest request){
-		//进行页面跳转
-		ModelAndView modelAndView = new ModelAndView();
-	    modelAndView.setViewName("error.html");
-	    modelAndView.addObject("msg", e.getMessage());
-	    return modelAndView; 
-    }
+@ExceptionHandler(value=MyException.class)
+Object handleMyException(MyException e,HttpServletRequest request){
+	//进行页面跳转
+	ModelAndView modelAndView = new ModelAndView();
+	modelAndView.setViewName("error.html");
+	modelAndView.addObject("msg", e.getMessage());
+	return modelAndView; 
+}
 ```
