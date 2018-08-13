@@ -23,6 +23,9 @@
 7. 静态资源默认配置：https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-developing-web-applications.html#boot-features-spring-mvc-static-content
 8. application.properties配置信息：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#common-application-properties
 9. banner：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#boot-features-banners
+10. jar和war目录讲解：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#executable-jar-jar-file-structure
+11. jetty,tomcat,undertow性能比较：https://examples.javacodegeeks.com/enterprise-java/spring/tomcat-vs-jetty-vs-undertow-comparison-of-spring-boot-embedded-servlet-containers/
+12. filter：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#boot-features-embedded-container-servlets-filters-listeners
 
 ## 2. 基本环境
 - jdk1.8+
@@ -87,7 +90,7 @@ public MultipartConfigElement multipartConfigElement() {
 }
 ```
 3. 当访问盘符中的文件时，需要在**spring.resources.static-locations**后添加路径
-```
+```java
 web.upload-path=H:\\temp\\
 spring.resources.static-locations=file:${web.upload-path}
 ```
@@ -126,7 +129,8 @@ private String filePath;
 3. 手动触发重启：使用一个文件来控制。
 在application.properties中添加配置`spring.devtools.restart.trigger-file=trigger.txt`，trigger.txt放在`src/main/resources/`下即可，通过改变version的值来重启项目
 4. idea中热部署不生效
-5. 因为idea把修改类自动编译给关闭了，所以需要我们手动开启
+
+因为idea把修改类自动编译给关闭了，所以需要我们手动开启
 
 ![](https://i.imgur.com/hk4jKeJ.png)
 
@@ -135,19 +139,20 @@ private String filePath;
 ![](https://i.imgur.com/Zbcv1iL.png)
 
 进去之后，找到如下图所示的选项，打勾
+
 ![](https://i.imgur.com/Oc6xVSe.png)
 ## 7. 配置文件
 SpringBoot2.x常见的配置文件 xml、yml、properties的区别和使用
 1. 常见的配置文件 xx.yml, xx.properties，
 (a)YAML（Yet Another Markup Language）
 写 YAML 要比写 XML 快得多(无需关注标签或引号)，使用空格 Space 缩进表示分层，不同层次之间的缩进可以使用不同的空格数目。注意：**key后面的冒号，后面一定要跟一个空格,树状结构**，application.properties示例
-```
+```java
 server.port=8090  
 server.tomcat.max-threads=0  
 server.tomcat.uri-encoding=UTF-8 
 ```
 application.yml示例
-```
+```java
 server:  
 	port: 8090  
 	session-timeout: 30  
@@ -237,3 +242,72 @@ Object handleMyException(MyException e,HttpServletRequest request){
 	return modelAndView; 
 }
 ```
+
+## 10. 打包成war
+(1)在pom.xml中将打包形式jar修改为war<packaging>war</packaging>
+
+(2)构建项目名称 <finalName>demo</finalName>
+```java
+	<build>
+		<finalName>demo</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+```
+(3)修改启动类
+```java
+public class XdclassApplication extends SpringBootServletInitializer {
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(XdclassApplication.class);
+	}
+
+	public static void main(String[] args) throws Exception {
+		SpringApplication.run(XdclassApplication.class, args);
+	}
+
+}
+```
+(4)打包项目，启动tomcat
+
+**springboot2.x要使用tomcat8**
+
+## 11. 过滤器和拦截器
+### 11.1 使用Servlet3.0配置自定义Filter
+springboot启动时默认加载的filter（characterEncodingFilter、hiddenHttpMethodFilter、httpPutFormContentFilter、requestContextFilter）
+
+新建一个Filter类，implements Filter，并实现对应的接口 --》 @WebFilter 标记一个类为filter，被spring进行扫描 --》 控制chain.doFilter的方法的调用，来实现是否通过放行 --》 启动类里面增加 @ServletComponentScan，进行扫描
+
+### 11.2 使用Servlet3.0的注解自定义原生Servlet
+创建一个Servlet类，extends HttpServlet，并实现对应的接口 --》 @WebServlet(name = "userServlet",urlPatterns = "/test/customs")标记一个类为servlet，urlPatterns设置匹配路径 --》 启动类里面增加 @ServletComponentScan，进行扫描
+
+### 11.3 使用Servlet3.0的注解自定义原生Listener监听器
+常用监听器有（servletContextListener、httpSessionListener、servletRequestListener）
+
+创建一个listener类，implements ServletRequestListener接口（其他也行），并实现对应的接口方法 --》 @WebListener标记为一个listener --》启动类里面增加 @ServletComponentScan，进行扫描
+
+### 11.4 自定义拦截器及新旧配置对比
+springboot2.x以前：创建一个类CustomOldWebMvcConfigurer，extends WebMvcConfigurerAdapter，并继承addInterceptors方法 **--》**使用@Configuration标记为一个拦截器 **--》**编写拦截器LoginIntercepter，implements HandlerInterceptor，重写三个方法
+
+springboot2.x：创建一个类CustomWebMvcConfigurer，implements WebMvcConfigurer，实现默认方法addInterceptors --》**使用@Configuration标记为一个拦截器 **--》**编写拦截器LoginIntercepter，implements HandlerInterceptor，重写三个方法
+
+HandlerInterceptor的3个方法：（**preHandle**：调用Controller某个方法之前;**postHandle**：Controller之后调用，视图渲染之前，如果控制器Controller出现了异常，则不会执行此方法;**afterCompletion**：不管有没有异常，这个afterCompletion都会被调用，用于资源清理）
+
+拦截器按照注册的顺序进行拦截，先注册，先拦截
+
+拦截器不生效的原因：
+- 是否有加@Configuration；
+- 拦截路径是否有问题 **  和 * ；
+- 拦截器最后路径一定要 “/**”， 如果是目录的话则是 /*/
+
+### 11.5 Filter和Interceptor的不同
+- Filter是基于函数回调doFilter()，而Interceptor则是基于AOP思想
+- Filter在只在Servlet前后起作用，而Interceptor够深入到方法前后、异常抛出前后等
+- 依赖于Servlet容器即web应用中，而Interceptor不依赖于Servlet容器所以可以运行在多种环境。
+- 在接口调用的生命周期里，Interceptor可以被多次调用，而Filter只能在容器初始化时调用一次。
+- Filter和Interceptor的执行顺序：过滤前->拦截前->action执行->拦截后->过滤后
