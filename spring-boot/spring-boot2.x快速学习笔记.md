@@ -10,6 +10,9 @@
 * [全局异常](#9-全局异常)
 * [打包成war](#10-打包成war)
 * [过滤器和拦截器](#11-过滤器和拦截器)
+* [模板引擎](#12-模板引擎)
+* [mybatis](#13-mybatis)
+* [日志](#14-日志)
 
 ## 1. springboot文档
 1. springboot GitHub地址：https://github.com/spring-projects/spring-boot
@@ -24,6 +27,14 @@
 10. jar和war目录讲解：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#executable-jar-jar-file-structure
 11. jetty,tomcat,undertow性能比较：https://examples.javacodegeeks.com/enterprise-java/spring/tomcat-vs-jetty-vs-undertow-comparison-of-spring-boot-embedded-servlet-containers/
 12. filter：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#boot-features-embedded-container-servlets-filters-listeners
+13. starter：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#using-boot-starter
+14. thymeleaf官网：https://www.thymeleaf.org/doc/articles/thymeleaf3migration.html
+15. thymeleaf快速入门：https://www.thymeleaf.org/doc/articles/standarddialect5minutes.html
+16. mybatis官网：http://www.mybatis.org/mybatis-3/zh/java-api.html
+17. mybatis-spring-boot-autoconfigure：http://www.mybatis.org/spring-boot-starter/mybatis-spring-boot-autoconfigure/#Configuration
+18. mybatis-spring-boot-sample：https://github.com/mybatis/spring-boot-starter/tree/master/mybatis-spring-boot-samples
+19. spring-boot日志：https://docs.spring.io/spring-boot/docs/2.1.0.BUILD-SNAPSHOT/reference/htmlsingle/#boot-features-logging
+20. logback：https://logback.qos.ch/manual/index.html
 
 ## 2. 基本环境
 - jdk1.8+
@@ -309,3 +320,245 @@ HandlerInterceptor的3个方法：（**preHandle**：调用Controller某个方�
 - 依赖于Servlet容器即web应用中，而Interceptor不依赖于Servlet容器所以可以运行在多种环境。
 - 在接口调用的生命周期里，Interceptor可以被多次调用，而Filter只能在容器初始化时调用一次。
 - Filter和Interceptor的执行顺序：过滤前->拦截前->action执行->拦截后->过滤后
+
+## 12. 模板引擎
+### 12.1 常见模板的对比
+(a)、JSP（后端渲染，消耗性能）
+
+Java Server Pages 动态网页技术,由应用服务器中的JSP引擎来编译和执行，再将生成的整个页面返回给客户端。可以写java代码，springboot不推荐。
+
+(b)、Freemarker 
+
+FreeMarker Template Language（FTL），文件一般保存为 xxx.ftl。严格依赖MVC模式，不依赖Servlet容器（不占用JVM内存），内建函数
+
+(c)、Thymeleaf (主推)
+
+轻量级的模板引擎（负责逻辑业务的不推荐，解析DOM或者XML会占用多的内存）。可以直接在浏览器中打开且正确显示模板页面。直接是html结尾，直接编辑
+
+### 12.2 整合Freemarker
+引入依赖
+```java
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+```
+引入配置文件
+```java
+		# 是否开启thymeleaf缓存,本地为false，生产建议为true
+		spring.freemarker.cache=false
+
+		spring.freemarker.charset=UTF-8
+		spring.freemarker.allow-request-override=false
+		spring.freemarker.check-template-location=true
+		
+		#类型
+		spring.freemarker.content-type=text/html
+
+		spring.freemarker.expose-request-attributes=true
+		spring.freemarker.expose-session-attributes=true
+		
+		#文件后缀
+		spring.freemarker.suffix=.ftl
+		#路径
+		spring.freemarker.template-loader-path=classpath:/templates/
+```
+
+### 12.3整合Thymeleaf
+引入依赖
+```java
+		<dependency>
+		   	<groupId>org.springframework.boot</groupId>
+		   	<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+```
+引入配置文件
+```java
+		#开发时关闭缓存,不然没法看到实时页面
+		spring.thymeleaf.cache=false
+		spring.thymeleaf.mode=HTML5
+		#前缀
+		spring.thymeleaf.prefix=classpath:/templates/
+		#编码
+		spring.thymeleaf.encoding=UTF-8
+		#类型
+		spring.thymeleaf.content-type=text/html
+		#名称的后缀
+		spring.thymeleaf.suffix=.html
+```
+
+## 13. mybatis
+引入依赖
+```java
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>1.3.2</version>
+			<scope>runtime</scope>			    
+		</dependency>
+
+		<!-- MySQL的JDBC驱动包	-->	
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency> 
+		<!-- 引入第三方数据源 -->		
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>1.1.6</version>
+		</dependency>
+```
+加入配置文件
+```java
+		#mybatis.type-aliases-package=net.xdclass.base_project.domain
+		#可以自动识别
+		#spring.datasource.driver-class-name =com.mysql.jdbc.Driver
+
+		spring.datasource.url=jdbc:mysql://localhost:3306/movie?useUnicode=true&characterEncoding=utf-8
+		spring.datasource.username =root
+		spring.datasource.password =password
+		#如果不使用默认的数据源 （com.zaxxer.hikari.HikariDataSource）
+		spring.datasource.type =com.alibaba.druid.pool.DruidDataSource
+
+		#增加打印sql语句，一般用于本地开发测试
+		mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
+```
+加载配置，注入到sqlSessionFactory等都是springBoot帮我们完成
+
+启动类增加mapper扫描
+
+@MapperScan("com.qingtian.mapper")
+
+常用crud
+```java
+	    @Select("SELECT * FROM user")
+	    @Results({
+	        @Result(column = "create_time",property = "createTime")  //javaType = java.util.Date.class        
+	    })
+	    List<User> getAll();
+	  
+	    @Select("SELECT * FROM user WHERE id = #{id}")
+	    @Results({
+	    	 @Result(column = "create_time",property = "createTime")
+	    })
+	    User findById(Long id);
+
+	    @Update("UPDATE user SET name=#{name} WHERE id =#{id}")
+	    void update(User user);
+
+	    @Delete("DELETE FROM user WHERE id =#{userId}")
+	    void delete(Long userId);
+```
+
+## 14. 日志
+### 14.1 logback介绍
+基于Log4j基础上大量改良，不能单独使用，推荐配合日志框架SLF4J来使用
+
+logback当前分成三个模块：logback-core,logback-classic和logback-access;logback-core是其它两个模块的基础模块
+
+### 14.2 Logback的核心对象
+- Logger：日志记录器
+- Appender：指定日志输出的目的地，目的地可以是控制台，文件
+- Layout：日志布局 格式化日志信息的输出
+
+### 14.3 日志级别：DEBUG < INFO < WARN < ERROR
+```
+		===========log4j示例===========		
+		 ### 设置###
+		log4j.rootLogger = debug,stdout,D,E
+
+		### 输出信息到控制抬 ###
+		log4j.appender.stdout = org.apache.log4j.ConsoleAppender
+		log4j.appender.stdout.Target = System.out
+		log4j.appender.stdout.layout = org.apache.log4j.PatternLayout
+		log4j.appender.stdout.layout.ConversionPattern = [%-5p] %d{yyyy-MM-dd HH:mm:ss,SSS} method:%l%n%m%n
+
+		### 输出DEBUG 级别以上的日志到=D://logs/error.log ###
+		log4j.appender.D = org.apache.log4j.DailyRollingFileAppender
+		log4j.appender.D.File = D://logs/log.log
+		log4j.appender.D.Append = true
+		log4j.appender.D.Threshold = DEBUG 
+		log4j.appender.D.layout = org.apache.log4j.PatternLayout
+		log4j.appender.D.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+
+		### 输出ERROR 级别以上的日志到=D://logs/error.log ###
+		log4j.appender.E = org.apache.log4j.DailyRollingFileAppender
+		log4j.appender.E.File =E://logs/error.log 
+		log4j.appender.E.Append = true
+		log4j.appender.E.Threshold = ERROR 
+		log4j.appender.E.layout = org.apache.log4j.PatternLayout
+		log4j.appender.E.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n 
+```
+### 14.4 Log4j日志转换为logback在线工具
+支持log4j.properties转换为logback.xml,不支持 log4j.xml转换为logback.xml,https://logback.qos.ch/translator/
+
+### 14.5 springboot整合logback
+默认情况下，SpringBoot将日志输出到控制台
+
+创建日志文件logback-spring.xml，官方推荐**-spring.xml**结尾。默认加载加载配置顺序logback-spring.xml，logback-spring.groovy，logback.xml，logback.groovy
+
+logback-spring.xml配置有如下节点：
+root节点要加在最后面
+
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+	 <!-- 输出日志到控制台，默认输出debug -->
+	 <appender name="consoleApp" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                %date{yyyy-MM-dd HH:mm:ss.SSS} %-5level[%thread]%logger{56}.%method:%L -%msg%n
+            </pattern>
+        </layout>
+    </appender>
+	<!-- 输出到文件中 -->
+    <appender name="fileInfoApp" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 过滤器，遇到ERROR级别的日志，onMath命中则DENY，onMisMatch不命中则ACCEPT -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+             <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+		<!-- 输出格式 -->
+        <encoder>
+            <pattern>
+                %date{yyyy-MM-dd HH:mm:ss.SSS} %-5level[%thread]%logger{56}.%method:%L -%msg%n
+            </pattern>
+        </encoder>
+        <!-- 滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 路径 -->
+            <fileNamePattern>app_log/log/app.info.%d.log</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+    <appender name="fileErrorApp" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 日志级别低于ERROR不输出 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>
+                %date{yyyy-MM-dd HH:mm:ss.SSS} %-5level[%thread]%logger{56}.%method:%L -%msg%n
+            </pattern>
+        </encoder>
+        
+        <!-- 设置滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 路径 -->
+            <fileNamePattern>app_log/log/app.err.%d.log</fileNamePattern>
+            
+            <!-- 控制保留的归档文件的最大数量，超出数量就删除旧文件，假设设置每个月滚动，
+            且<maxHistory> 是1，则只保存最近1个月的文件，删除之前的旧文件 -->
+             <MaxHistory>1</MaxHistory>
+            
+        </rollingPolicy>
+    </appender>
+    <root level="INFO">  
+        <appender-ref ref="consoleApp"/>
+        <appender-ref ref="fileInfoApp"/>
+        <appender-ref ref="fileErrorApp"/>
+    </root>
+</configuration>
+```
