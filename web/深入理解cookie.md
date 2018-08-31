@@ -109,7 +109,12 @@ HttpServletResponse提供的Cookie操作只有一个add(Cookie cookie)，所以�
 我们无法在服务端通过cookie.getMaxAge()来判断该cookie是否过期，maxAge只是一个只读属性，值永远为-1。当cookie过期时，浏览器在与后台交互时会自动筛选过期cookie，过期了的cookie就不会被携带了。
 
 ### Cookie的域名
+Cookie是不可以跨域名的，隐私安全机制禁止网站非法获取其他网站的Cookie。
 
+正常情况下，同一个一级域名下的两个二级域名也不能交互使用Cookie，比如test1.mcrwayfun.com和test2.mcrwayfun.com，因为二者的域名不完全相同。如果想要mcrwayfun.com名下的二级域名都可以使用该Cookie，需要设置Cookie的domain参数
+
+### Cookie的路径
+path属性决定允许访问Cookie的路径。比如，设置为"/"表示允许所有路径都可以使用Cookie
 
 
 
