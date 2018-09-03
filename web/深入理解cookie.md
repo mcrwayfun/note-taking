@@ -1,13 +1,19 @@
-# 深入理解cookie
+![](https://ws1.sinaimg.cn/large/0062R7s4gy1fuwrzehwluj33v92kye8i.jpg)
+## 1. 前言
+朋友问我cookie是什么，用来干什么的，可是我居然无法**清楚明白简短**地向其阐述cookie，这不禁让我陷入了沉思：为什么我无法解释清楚，我对学习的方法产生了怀疑！在知乎上看到有人推荐使用费尔曼学习技巧，于是在重新学习cookie的过程中使用了该技巧来试验，效果有待验证！
 
-## 1. 什么是cookie
-当用户通过HTTP协议去访问服务器时，服务器会将一些Key/Value键值返回给浏览器。当这个用户再次访问这个服务器时，数据又被完整地带回给服务器。
+在学习一个新的知识点前，我们应该明白自己的学习目标，要带着疑问去学习，该小节须要了解：
+1. 什么是cookie，cookie的作用
+2. cookie的工作机制，即cookie是运作流程
+3. cookie的基本属性（4个）以及我们如何使用cookie
+
+## 2. 什么是cookie
+
+HTTP协议本身是无状态的。什么是无状态呢，即服务器无法判断用户身份。Cookie实际上是一小段的文本信息（key-value格式）。客户端向服务器发起请求，如果服务器需要记录该用户状态，就使用response向客户端浏览器颁发一个Cookie。客户端浏览器会把Cookie保存起来。当浏览器再请求该网站时，浏览器把请求的网址连同该Cookie一同提交给服务器。服务器检查该Cookie，以此来辨认用户状态。
 
 打个比方，我们去银行办理储蓄业务，第一次给你办了张银行卡，里面存放了身份证、密码、手机等个人信息。当你下次再来这个银行时，银行机器能识别你的卡，从而能够直接办理业务。
 
-HTTP协议本身是无状态的。什么是无状态呢，即服务器无法判断用户身份。Cookie实际上是一小段的文本信息。客户端请求服务器，如果服务器需要记录该用户状态，就使用response向客户端浏览器颁发一个Cookie。客户端浏览器会把Cookie保存起来。当浏览器再请求该网站时，浏览器把请求的网址连同该Cookie一同提交给服务器。服务器检查该Cookie，以此来辨认用户状态。
-
-## 2. cookie机制
+## 3. cookie机制
 当用户第一次访问并登陆一个网站的时候，cookie的设置以及发送会经历以下4个步骤：
 
 **客户端发送一个请求到服务器** --》 **服务器发送一个HttpResponse响应到客户端，其中包含Set-Cookie的头部** --》 **客户端保存cookie，之后向服务器发送请求时，HttpRequest请求中会包含一个Cookie的头部** --》**服务器返回响应数据**
@@ -33,7 +39,7 @@ HTTP协议本身是无状态的。什么是无状态呢，即服务器无法判�
 
 **可见Response Headers中包含Set-Cookie头部，而Request Headers中包含了Cookie头部。name和value正是上述设置的。**
 
-## 3. cookie属性项
+## 4. cookie属性项
 
 | 属性项		   | 属性项介绍 														            			 | 
 | :----------- |:----------------------------------------------------------------------------------------|
@@ -98,7 +104,7 @@ maxAge设置为负数，能看到Expires属性改变了，但Cookie仍然会存�
 ![](https://i.imgur.com/LPCnU12.gif)
 
 ### 修改或者删除Cookie
-HttpServletResponse提供的Cookie操作只有一个add(Cookie cookie)，所以想要修改Cookie只能使用一个同名的Cookie来覆盖原先的Cookie。如果要删除某个Cookie，则只需要新建一个同名的Cookie，并将maxAge设置为0，并覆盖原来的Cookie即可。
+HttpServletResponse提供的Cookie操作只有一个addCookie(Cookie cookie)，所以想要修改Cookie只能使用一个同名的Cookie来覆盖原先的Cookie。如果要删除某个Cookie，则只需要新建一个同名的Cookie，并将maxAge设置为0，并覆盖原来的Cookie即可。
 
 新建的Cookie，除了value、maxAge之外的属性，比如name、path、domain都必须与原来的一致才能达到修改或者删除的效果。否则，浏览器将视为两个不同的Cookie不予覆盖。
 
@@ -111,12 +117,10 @@ HttpServletResponse提供的Cookie操作只有一个add(Cookie cookie)，所以�
 ### Cookie的域名
 Cookie是不可以跨域名的，隐私安全机制禁止网站非法获取其他网站的Cookie。
 
-正常情况下，同一个一级域名下的两个二级域名也不能交互使用Cookie，比如test1.mcrwayfun.com和test2.mcrwayfun.com，因为二者的域名不完全相同。如果想要mcrwayfun.com名下的二级域名都可以使用该Cookie，需要设置Cookie的domain参数
+正常情况下，同一个一级域名下的两个二级域名也不能交互使用Cookie，比如test1.mcrwayfun.com和test2.mcrwayfun.com，因为二者的域名不完全相同。如果想要mcrwayfun.com名下的二级域名都可以使用该Cookie，需要设置Cookie的domain参数为**.mcrwayfun.com**，这样使用test1.mcrwayfun.com和test2.mcrwayfun.com就能访问同一个cookie
+
+> 一级域名又称为顶级域名，一般由字符串+后缀组成。熟悉的一级域名有baidu.com，qq.com。com，cn，net等均是常见的后缀。
+> 二级域名是在一级域名下衍生的，比如有个一级域名为mcrfun.com，则blog.mcrfun.com和www.mcrfun.com均是其衍生出来的二级域名。
 
 ### Cookie的路径
 path属性决定允许访问Cookie的路径。比如，设置为"/"表示允许所有路径都可以使用Cookie
-
-
-
-	
-	
